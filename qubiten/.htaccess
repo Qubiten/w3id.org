@@ -1,12 +1,25 @@
-# Permanent-identifier redirects for https://w3id.org/qubiten/
-# Namespace: metadata registry (ISO/IEC 11179) of Qubiten
-# Maintainer: Wilbye (Qubiten) <wilbye@qubiten.com>
-# Source of record: https://github.com/Qubiten/metadata-registry
-# Interim target: repository documentation (superseded when the LDP
-# containers provide dereferenceable resources).
+# Permanent-identifier allocation for https://w3id.org/qubiten/
+#
+# The qubiten/ space allocates one sub-prefix per Qubiten source of record.
+# Two are registered:
+#   mr/                — metadata registry (ISO/IEC 11179);   302 to repository docs (interim)
+#   meta-architecture/ — the architecture-governance corpus;  303 content negotiation (Cool URIs)
+#
+# Maintainer / registration authority: Wilbye (Qubiten) <wilbye@qubiten.com>
+# Allocation table + resolution modes: ./README.md
+#
+# Persistent, opaque PIDs (W3C Cool URIs; httpRange-14): the IRI carries the
+# opaque id, never the label. Non-document IRIs answer 303 See Other.
 
 Options +FollowSymLinks
 RewriteEngine on
+
+# ============================================================================
+# mr/ — metadata registry (ISO/IEC 11179)
+# Source of record: https://github.com/Qubiten/metadata-registry
+# Interim target: repository documentation (superseded when the LDP
+# containers provide dereferenceable resources).
+# ============================================================================
 
 # Registration authority identifier
 RewriteRule ^mr/ra/qubiten$ https://github.com/Qubiten/metadata-registry/blob/main/docs/01-designation-register.md [R=302,L]
@@ -16,3 +29,40 @@ RewriteRule ^mr/?$ https://github.com/Qubiten/metadata-registry/blob/main/docs/R
 
 # All other IRIs under the namespace -> repository (interim)
 RewriteRule ^mr/(.*)$ https://github.com/Qubiten/metadata-registry [R=302,L]
+
+# ============================================================================
+# meta-architecture/ — architecture-governance corpus
+# Source of record: https://github.com/Qubiten/meta-architecture
+# 303 content negotiation per httpRange-14 (W3C "Cool URIs for the Semantic
+# Web"; "Best Practice Recipes for Publishing RDF Vocabularies").
+# Interim targets: the committed corpus/spine serialisations on raw GitHub,
+# superseded when the platform serves dereferenceable resources directly.
+# ============================================================================
+
+# ---- corpus administered records:  /meta-architecture/id/<opaque>  ----
+RewriteCond %{HTTP_ACCEPT} text/turtle [NC]
+RewriteRule ^meta-architecture/id/(.+)$ https://raw.githubusercontent.com/Qubiten/meta-architecture/main/docs/registry/corpus.ttl [R=303,L]
+RewriteCond %{HTTP_ACCEPT} application/(ld\+)?json [NC]
+RewriteRule ^meta-architecture/id/(.+)$ https://raw.githubusercontent.com/Qubiten/meta-architecture/main/docs/registry/corpus.json [R=303,L]
+RewriteRule ^meta-architecture/id/(.+)$ https://github.com/Qubiten/meta-architecture/blob/main/docs/registry/corpus.json [R=303,L]
+
+# ---- production spine + domain:  /meta-architecture/spine/<opaque>  ----
+RewriteCond %{HTTP_ACCEPT} text/turtle [NC]
+RewriteRule ^meta-architecture/spine/(.+)$ https://raw.githubusercontent.com/Qubiten/meta-architecture/main/production/out/spine.ttl [R=303,L]
+RewriteCond %{HTTP_ACCEPT} application/(ld\+)?json [NC]
+RewriteRule ^meta-architecture/spine/(.+)$ https://raw.githubusercontent.com/Qubiten/meta-architecture/main/production/out/spine.json [R=303,L]
+RewriteRule ^meta-architecture/spine/(.+)$ https://github.com/Qubiten/meta-architecture/blob/main/production/out/index.html [R=303,L]
+
+# ---- marec: vocabulary (hash namespace):  /meta-architecture/ns[#term]  ----
+# Publishing the vocabulary at its namespace IRI via content negotiation
+# (swbp-vocab-pub recipe 3, hash namespace: one document carries every term).
+# Interim: the vocabulary is served from the corpus graph in which its terms
+# are exercised, pending a dedicated ontology serialisation (see README).
+RewriteCond %{HTTP_ACCEPT} text/turtle [NC]
+RewriteRule ^meta-architecture/ns/?$ https://raw.githubusercontent.com/Qubiten/meta-architecture/main/docs/registry/corpus.ttl [R=303,L]
+RewriteCond %{HTTP_ACCEPT} application/(ld\+)?json [NC]
+RewriteRule ^meta-architecture/ns/?$ https://raw.githubusercontent.com/Qubiten/meta-architecture/main/docs/registry/corpus.json [R=303,L]
+RewriteRule ^meta-architecture/ns/?$ https://github.com/Qubiten/meta-architecture/blob/main/docs/registry/corpus.ttl [R=303,L]
+
+# Namespace root -> the corpus reading index (interim)
+RewriteRule ^meta-architecture/?$ https://github.com/Qubiten/meta-architecture/blob/main/docs/register-document-naming.md [R=302,L]
